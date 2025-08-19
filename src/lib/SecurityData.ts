@@ -1,5 +1,14 @@
 export default class SecurityData {
     /**
+     * API key
+     */
+    public static apiKey = process.env.API_KEY!;
+
+    /**
+     * Merchant Id.
+     */
+    public static MerchantId = process.env.MERCHANT_ID!;
+    /**
      * JWE Key Id.
      */
     public static EncryptionKeyId = process.env.ENCRYPTION_KEY_ID!;

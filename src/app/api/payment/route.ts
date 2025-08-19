@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Payment } from "@/lib/Payment";
+import SecurityData from "@/lib/SecurityData";
 
 interface PaymentPageData {
     response: {
@@ -17,8 +18,6 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
 
         const {
-            merchant_id,
-            api_key,
             input_currency,
             input_amount,
             input_3d,
@@ -27,6 +26,9 @@ export async function POST(req: NextRequest) {
             cancel_url,
             backend_url,
         } = body;
+
+        const api_key = SecurityData.apiKey;
+        const merchant_id = SecurityData.MerchantId;
 
         // Call your JOSE wrapper
         const resPayload = await payment.executeFormJose(

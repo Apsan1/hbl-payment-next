@@ -24,7 +24,6 @@ export abstract class ActionRequest {
             },
         });
     }
-    
     // For JWS (signing/verification)
     protected async getSigningPrivateKey(pemKey: string): Promise<CryptoKey> {
         const privateKeyPem = [
@@ -62,7 +61,6 @@ export abstract class ActionRequest {
         ].join("\n");
         return await importPKCS8(privateKeyPem, "RSA-OAEP"); // RSA-OAEP for decryption
     }
-
 
     /**
      * Creates an encrypted JOSE Token from given payload

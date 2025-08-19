@@ -61,8 +61,8 @@ export class Payment extends ActionRequest {
             purchaseItems: [
                 {
                     purchaseItemType: "ticket",
-                    referenceNo: "2322460376026",
-                    purchaseItemDescription: "Bundled insurance",
+                    referenceNo: "260376026",
+                    purchaseItemDescription: "HHAHAHHAH insurance",
                     purchaseItemPrice: {
                         amountText: "000000000100",
                         currencyCode: "NPR",

@@ -1,103 +1,140 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import SecurityData from "@/lib/SecurityData";
+import { useState } from "react";
+
+export default function PaymentPage() {
+  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    input_currency: "NPR",
+    input_amount: "1",
+    input_3d: "N",
+    success_url: "http://localhost:3000/payment/success",
+    fail_url: "http://localhost:3000/payment/failed",
+    cancel_url: "http://localhost:3000/payment/cancel",
+    backend_url: "http://localhost:3000/payment/backend",
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl; // redirect to gateway
+      } else {
+        alert("Payment request failed!");
+        console.error("Payment response:", data);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-white text-black shadow-lg rounded-2xl p-8">
+        <h1 className="text-2xl font-bold text-center mb-6">
+          HBL Payment Gateway
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Currency */}
+          <div>
+            <label className="block text-sm font-medium ">Currency</label>
+            <select
+              name="input_currency"
+              value={form.input_currency}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg"
+            >
+              <option value="NPR">NPR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+          {/* Amount */}
+          <div>
+            <label className="block text-sm font-medium ">Amount</label>
+            <input
+              type="number"
+              name="input_amount"
+              value={form.input_amount}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+
+          {/* 3D Secure */}
+          <div>
+            <label className="block text-sm font-medium ">3D Secure</label>
+            <select
+              name="input_3d"
+              value={form.input_3d}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg"
+            >
+              <option value="N">No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+
+          {/* URLs */}
+          {["success_url", "fail_url", "cancel_url", "backend_url"].map(
+            (field) => (
+              <div key={field}>
+                <label className="block text-sm font-medium  capitalize">
+                  {field.replace("_", " ")}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  value={form[field as keyof typeof form]}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            )
+          )}
+
+          {/* Submit */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition"
+            >
+              {loading ? "Processing..." : "Checkout"}
+            </button>
+          </div>
+        </form>
+
+        <div className="text-center text-sm text-gray-500 mt-6">
+          <p>
+            <strong>Himalayan Bank Limited</strong>
+          </p>
+          <p>Kamaladi, Kathmandu</p>
+          <p>G.P.O. Box: 20590</p>
+          <p>Phone: +977-1-4227749</p>
+          <p>Fax: +977-1-4222800</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
